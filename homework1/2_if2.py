@@ -15,17 +15,34 @@
 
 """
 
+"""
+2_if2.py (замечания Алисы)
+
+1. elif arg1 != arg2 and arg2 == 'learn': - нужно ли первое сравнение?
+// верно, первое условие не нужно... такой сценарий поймает первый IF
+
+2. А что будет, если вызвать функцию так:
+main("Привет", 2)
+А что должно быть?
+
+3. А зачем мы возвращаем "4"? Да и можно возвращать цифры, зачем делать их строками?
+"""
+
 def main(arg1, arg2):
-  if type(arg1) != str:
-    return('0')
-  elif arg1 == arg2:
-    return('1')
+  try:
+    arg1 = str(arg1)
+    arg2 = str(arg2)
+  except TypeError:
+    print(0)
+
+  if arg1 == arg2:
+    return(1)
   elif len(arg1) > len(arg2):
-    return('2')
-  elif arg1 != arg2 and arg2 == 'learn':
-    return('3')
+    return(2)
+  elif arg2 == 'learn':
+    return(3)
   else:
-    return('4')
+    return('Иной сценарий сравнения аргументов')
 
 
 if __name__ == "__main__":
