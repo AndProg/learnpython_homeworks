@@ -12,66 +12,65 @@
   бота отвечать, в каком созвездии сегодня находится планета.
 
 """
-import logging, ephem
 
+import logging, ephem
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO,
-                    filename='bot.log'
+import settings
+
+logging.basicConfig(
+    filename='lesson1_bot.log', 
+    level=logging.INFO
 )
 
-
-PROXY = {
-    'proxy_url': 'socks5://t1.learn.python.ru:1080',
-    'urllib3_proxy_kwargs': {
-        'username': 'learn', 
-        'password': 'python'
+PROXY = {'proxy_url': settings.PROXY_URL,
+    'urllib3_proxy_kwargs':{
+        'username': settings.PROXY_USERNAME, 
+        'password': settings.PROXY_PASSWORD
     }
 }
 
-
-def greet_user(bot, update):
-    text = 'Вызван /start'
-    print(text)
+def greet_user(update, context):
+    print('вызван /start')
     update.message.reply_text('Здравствуй, Пользователь!')
 
 
-def stellar(bot, update):
+def stellar(update, context):
     print('Вызван /planet')
-    update.message.reply_text('Введите название интересующей Вас планеты (на английском)')
+    update.message.reply_text('Введите название интересующей Вас планеты (на английском) после команды /planet')
     chosen_planet = str(update.message.text).lower().split()
+    print(chosen_planet)
     
     for planet in planet_list:
       if planet in chosen_planet:
-        constel = ephem.constellation(planet.capitalize())
-        print('Планета находится в созвездии {}'.format(constel))
-      else:
-        print('Правильно укажите название интересующей планеты')
 
-
-
-def talk_to_me(bot, update):
-    user_text = update.message.text 
-    print(user_text)
-    update.message.reply_text(user_text)
+        planet = planet.capitalize()
+        planet_coords = getattr(ephem, planet)(ephem.now())
+        constel = ephem.constellation(planet_coords)
+        
+        update.message.reply_text('Планета находится в созвездии {}'.format(constel))
+        break
  
 
+def talk_to_me(update, context):
+    text = update.message.text
+    print(text)
+    update.message.reply_text(text)
+
+
 def main():
-    mybot = Updater('1140124573:AAHfncF7be4EGVAQ2M-vy5vwDsaRUU6EkaQ', request_kwargs=PROXY)
-    
+    mybot = Updater(settings.API_KEY, use_context=True, request_kwargs=PROXY)
+
     dp = mybot.dispatcher
-    dp.add_handler(CommandHandler("start", greet_user))
+    dp.add_handler(CommandHandler('start', greet_user))
     dp.add_handler(CommandHandler('planet', stellar))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
-    
+
     logging.info('Бот стартовал')
     mybot.start_polling()
     mybot.idle()
-       
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    planet_list = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']
+    main()
 
-  planet_list = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']
-
-  main()
